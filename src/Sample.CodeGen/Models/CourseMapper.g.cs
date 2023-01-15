@@ -17,7 +17,8 @@ namespace Sample.CodeGen.Models
                 CourseID = p1.CourseID,
                 Title = p1.Title,
                 Credits = p1.Credits,
-                Enrollments = funcMain1(p1.Enrollments)
+                Enrollments = funcMain1(p1.Enrollments),
+                DomainId = p1.DomainId
             };
         }
         public static CourseDto AdaptTo(this Course p3, CourseDto p4)
@@ -32,6 +33,7 @@ namespace Sample.CodeGen.Models
             result.Title = p3.Title;
             result.Credits = p3.Credits;
             result.Enrollments = funcMain2(p3.Enrollments, result.Enrollments);
+            result.DomainId = p3.DomainId;
             return result;
             
         }
@@ -52,7 +54,8 @@ namespace Sample.CodeGen.Models
                     LastName = p8.Student.LastName,
                     FirstMidName = p8.Student.FirstMidName
                 }
-            }).ToList<EnrollmentDto>()
+            }).ToList<EnrollmentDto>(),
+            DomainId = p7.DomainId
         };
         public static Course AdaptToCourse(this CourseAdd p9)
         {

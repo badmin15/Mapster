@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sample.CodeGen.Domains
 {
-    public class Course
+    public class Course : Base
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int CourseID { get; set; }

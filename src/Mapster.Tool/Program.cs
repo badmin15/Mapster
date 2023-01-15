@@ -164,7 +164,9 @@ namespace Mapster.Tool
                 Console.WriteLine($"Processing: {type.FullName}");
                 foreach (var builder in builders)
                 {
-                    CreateModel(opt, type, builder);
+                    var destinationBaseType = GetToTypeBase(type, builder.Attribute, types, codeGenConfig);
+                    
+                    CreateModel(opt, type, builder, destinationBaseType);
                 }
             }
         }
@@ -177,17 +179,27 @@ namespace Mapster.Tool
                 ? (byte?) b
                 : null;
         }
-        private static void CreateModel(ModelOptions opt, Type type, AdaptAttributeBuilder builder)
+        private static void CreateModel(ModelOptions opt, Type type, AdaptAttributeBuilder builder, Type? destinationBaseType)
         {
             var segments = GetSegments(type.Namespace, opt.BaseNamespace);
             var attr = builder.Attribute;
+            var implements = new List<Type>();
+
+            if (destinationBaseType != null)
+            {
+                implements = new List<Type>() { destinationBaseType };
+            }
+
+            string newTypeName = attr.Name!.Replace("[name]", type.Name);
+
             var definitions = new TypeDefinitions
             {
                 Namespace = CreateNamespace(opt.Namespace, segments, type.Namespace),
-                TypeName = attr.Name!.Replace("[name]", type.Name),
+                TypeName = newTypeName,
                 PrintFullTypeName = opt.PrintFullTypeName,
                 IsRecordType = opt.IsRecordType,
                 NullableContext = GetTypeNullableContext(type),
+                Implements = implements,
             };
             var translator = new ExpressionTranslator(definitions);
             var isAdaptTo = attr is AdaptToAttribute;
@@ -338,6 +350,23 @@ namespace Mapster.Tool
             }
 
             return toType;
+        }
+        private static Type? GetToTypeBase(Type type, BaseAdaptAttribute attr, HashSet<Type> types, CodeGenerationConfig config)
+        {
+
+            var baseFromType = type?.BaseType;
+
+            if (!(attr is AdaptToAttribute)  || baseFromType == null || baseFromType == typeof(object))
+                return null;
+
+            var baseToBuilders = config.AdaptAttributeBuilders
+                                            .Where(w => (attr.Type ==  null ? w.Attribute.Name == attr.Name : w.Attribute.Type == attr.Type) 
+                                                     &&  w.TypeSettings.ContainsKey(baseFromType)).ToList();
+
+            var baseToBuilder = baseToBuilders.Single();
+            var baseToType = GetToType(baseFromType, baseToBuilder.Attribute, types);
+
+            return baseToType;
         }
 
         private static void ApplySettings(TypeAdapterSetter setter, BaseAdaptAttribute attr, Dictionary<string, PropertySetting> settings)

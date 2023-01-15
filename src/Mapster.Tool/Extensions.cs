@@ -39,7 +39,7 @@ namespace Mapster.Tool
             return GetPropertiesFunc(type).Concat(GetFieldsFunc(type));
 
             IEnumerable<MemberInfo> GetPropertiesFunc(Type t) => t.GetProperties(bindingFlags)
-                .Where(x => x.GetIndexParameters().Length == 0);
+                .Where(x => x.GetIndexParameters().Length == 0 && x.DeclaringType == t);
 
             IEnumerable<MemberInfo> GetFieldsFunc(Type t) => t.GetFields(bindingFlags);
         }
