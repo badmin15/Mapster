@@ -362,6 +362,8 @@ namespace Mapster.Tool
             var baseToBuilders = config.AdaptAttributeBuilders
                                             .Where(w => (attr.Type ==  null ? w.Attribute.Name == attr.Name : w.Attribute.Type == attr.Type) 
                                                      &&  w.TypeSettings.ContainsKey(baseFromType)).ToList();
+            if (!baseToBuilders.Any())
+                throw new Exception($"Configuration error: You need to include type '{baseFromType.Name}' into MappingRegister.");
 
             var baseToBuilder = baseToBuilders.Single();
             var baseToType = GetToType(baseFromType, baseToBuilder.Attribute, types);
